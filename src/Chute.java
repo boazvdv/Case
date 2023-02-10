@@ -15,7 +15,6 @@ public class Chute {
         this.maxContainers = maxContainers;
         this.neighboringChutes = neighboringChutes;
         this.destShiftAssignment = new ArrayList<DestinationShift>();
-        this.expectedContainers = 0;
     }
 
     public int getChuteNumber() { return chuteNumber; }
@@ -25,8 +24,17 @@ public class Chute {
     public ArrayList<Chute> getNeighboringChutes() { return neighboringChutes; }
     public ArrayList<DestinationShift> getDestShiftAssignment() { return destShiftAssignment; }
     public void setDestShiftAssignment(ArrayList<DestinationShift> newDestShiftAssignment) { this.destShiftAssignment = newDestShiftAssignment; }
-    public int getExpectedContainers() { return expectedContainers; }
-    public void setExpectedContainers(int newExpectedContainers) { this.expectedContainers = newExpectedContainers; }
+    public int getExpectedContainers() {
+        this.updateExpectedContainers();
+        return expectedContainers;
+    }
+    public void updateExpectedContainers() {
+        int newExpectedContainers = 0;
+        for (DestinationShift destShift : this.destShiftAssignment) {
+            newExpectedContainers += destShift.getExpectedContainers();
+        }
+        this.expectedContainers = newExpectedContainers;
+    }
     public void addNeighboringChute(Chute newNeighboringChute) { this.neighboringChutes.add(newNeighboringChute); }
 
 }

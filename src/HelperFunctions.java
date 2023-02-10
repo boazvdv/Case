@@ -6,26 +6,22 @@ public class HelperFunctions {
         Worker[] workers = solution.getWorkers();
         for (Chute chute : chutes) {
             System.out.print("Chute: " + chute.getChuteNumber() + "  -  D/S: [");
-            int sumExpectedContainers = 0;
             ArrayList< DestinationShift > assignment = chute.getDestShiftAssignment();
             for (DestinationShift destShift : assignment) {
                 System.out.print("(" + destShift.getDestination() + ", " + destShift.getShift() + ") ");
-                sumExpectedContainers += destShift.getExpectedContainers();
             }
-            System.out.print("]  -  Expected containers: " + sumExpectedContainers);
+            System.out.print("]  -  Expected containers: " + chute.getExpectedContainers());
             System.out.println();
         }
         System.out.println();
 
         for (Worker worker : workers) {
             System.out.print("Worker: " + worker.getWorkerNumber() + "  -  Chutes: [");
-            int sumExpectedContainers = 0;
             ArrayList < Chute > assignment = worker.getChuteAssignment();
             for (Chute chute : assignment) {
                 System.out.print(chute.getChuteNumber() + " ");
-                sumExpectedContainers += chute.getExpectedContainers();
             }
-            System.out.print("]  -  Expected containers: " + sumExpectedContainers);
+            System.out.print("]  -  Expected containers: " + worker.getExpectedContainers());
             System.out.println();
         }
         System.out.println();

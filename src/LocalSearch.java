@@ -53,7 +53,6 @@ public class LocalSearch {
             }
         }
 
-
         Solution newSolution = new Solution(chutes, workers);
         return newSolution;
     }

@@ -164,12 +164,7 @@ public class ConstructionHeuristic {
 
         // Set expected number of containers per chute
         for (Chute chute : chutes) {
-            ArrayList < DestinationShift > assignment = chute.getDestShiftAssignment();
-            int res = 0;
-            for (DestinationShift destShift : assignment) {
-                res += destShift.getExpectedContainers();
-            }
-            chute.setExpectedContainers(res);
+            chute.updateExpectedContainers();
         }
 
         // Separate into L / R side

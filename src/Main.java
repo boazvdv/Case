@@ -11,19 +11,16 @@ public class Main {
             PostInstance instance = PostInstance.read(fileToRead);
 
             // Construct initial solution
-            Solution initialSolution = ConstructionHeuristic.main(instance);
+            Solution solution = ConstructionHeuristic.main(instance);
 
             // Calculate objective
-            int objective = HelperFunctions.calculateObjective(initialSolution);
-
-            // Print results
-            HelperFunctions.printResults(initialSolution);
+            int objective = HelperFunctions.calculateObjective(solution);
 
             // Local search
-            Solution newSolution = LocalSearch.workerLocalSearch(instance, initialSolution);
+            solution = LocalSearch.workerLocalSearch(instance, solution);
 
             // Print results
-            HelperFunctions.printResults(newSolution);
+            HelperFunctions.printResults(solution);
 
         } catch (FileNotFoundException ex) {
             System.out.println("There was an error reading file " + fileToRead);
