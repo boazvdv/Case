@@ -1,7 +1,5 @@
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Random;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class LocalSearch {
 
@@ -9,8 +7,7 @@ public class LocalSearch {
         Chute[] chutes = solution.getChutes();
         Worker[] workers = solution.getWorkers();
 
-        Solution newSolution = new Solution(chutes, workers);
-        return newSolution;
+        return new Solution(chutes, workers);
     }
 
     public static Solution workerLocalSearch(PostInstance instance, Solution solution, int searchType) {
@@ -71,8 +68,8 @@ public class LocalSearch {
                 boolean destinationReached = false;
                 Worker workerRemove = busiestWorker;
                 Worker workerAdd = busiestWorker;
-                ArrayList < Chute > assignmentRemove = new ArrayList < Chute > ();
-                ArrayList < Chute > assignmentAdd = new ArrayList < Chute > ();
+                ArrayList < Chute > assignmentRemove;
+                ArrayList < Chute > assignmentAdd;
                 while (!destinationReached) {
                     ArrayList < Worker > neighbors = workerRemove.getNeighboringWorkers();
                     if (busiestWorker.getWorkerNumber() > leastBusyWorker.getWorkerNumber()) {
@@ -115,7 +112,6 @@ public class LocalSearch {
             }
         }
 
-        Solution newSolution = new Solution(chutes, workers);
-        return newSolution;
+        return new Solution(chutes, workers);
     }
 }

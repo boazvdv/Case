@@ -1,12 +1,12 @@
 import java.util.ArrayList;
 
 public class Chute {
-    private int chuteNumber;
-    private int isLeft;
-    private int distanceFront;
-    private int maxContainers;
+    private final int chuteNumber;
+    private final int isLeft;
+    private final int distanceFront;
+    private final int maxContainers;
     private int expectedContainers;
-    private ArrayList<Chute> neighboringChutes;
+    private final ArrayList<Chute> neighboringChutes;
     private ArrayList<DestinationShift> destShiftAssignment;
     public Chute(int chuteNumber, int isLeft, int distanceFront, int maxContainers, ArrayList<Chute> neighboringChutes) {
         this.chuteNumber = chuteNumber;
@@ -14,7 +14,7 @@ public class Chute {
         this.distanceFront = distanceFront;
         this.maxContainers = maxContainers;
         this.neighboringChutes = neighboringChutes;
-        this.destShiftAssignment = new ArrayList<DestinationShift>();
+        this.destShiftAssignment = new ArrayList<>();
     }
 
     public int getChuteNumber() { return chuteNumber; }

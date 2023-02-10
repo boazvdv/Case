@@ -1,6 +1,5 @@
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -12,11 +11,11 @@ public class ConstructionHeuristic {
         int[][] chutesData = instance.getChutes();
         int minDistanceFront = Integer.MAX_VALUE;
         int maxDistanceFront = Integer.MIN_VALUE;
-        for (int i = 0; i < chutesData.length; i++) {
-           int distanceFront = chutesData[i][1];
-           if (distanceFront < minDistanceFront) {
-               minDistanceFront = distanceFront;
-           }
+        for (int[] chute : chutesData) {
+            int distanceFront = chute[1];
+            if (distanceFront < minDistanceFront) {
+                minDistanceFront = distanceFront;
+            }
             if (distanceFront > maxDistanceFront) {
                 maxDistanceFront = distanceFront;
             }
@@ -43,7 +42,7 @@ public class ConstructionHeuristic {
         // Sort destination/shift combinations by expected number of containers
         // Initialize array of destination/shift combinations
         int[][] sortedDestShiftsData = instance.getDestShift();
-        sortbyColumn(sortedDestShiftsData, 3);
+        sortByColumn(sortedDestShiftsData, 3);
 
         DestinationShift[] destShifts = new DestinationShift[sortedDestShiftsData.length];
         for (int i = 0; i < sortedDestShiftsData.length; i++) {
@@ -59,7 +58,7 @@ public class ConstructionHeuristic {
         // Separate into L / R side
         for (int leftIndicator = 0; leftIndicator <= 1; leftIndicator++) {
             // Create array with chutes on corresponding side
-            ArrayList< Chute > chutesSide = new ArrayList < Chute > ();
+            ArrayList< Chute > chutesSide = new ArrayList <> ();
             for (Chute chute : chutes) {
                 if (chute.getIsLeft() == leftIndicator) {
                     chutesSide.add(chute);
@@ -67,7 +66,7 @@ public class ConstructionHeuristic {
             }
 
             // Create queue with unassigned destination/shift combinations
-            Queue<DestinationShift> unassignedDestShifts = new LinkedList<DestinationShift>();
+            Queue<DestinationShift> unassignedDestShifts = new LinkedList<>();
             for (DestinationShift destShift : destShifts) {
                 if (destShift.getIsLeft() == leftIndicator) {
                     unassignedDestShifts.add(destShift);
@@ -105,7 +104,7 @@ public class ConstructionHeuristic {
 
                 // Randomly swap out conflicting D/S combination if no chute could be assigned due to postal code
                 if (!assigned) {
-                    ArrayList < DestinationShift > tempAssignment = new ArrayList<DestinationShift>();
+                    ArrayList < DestinationShift > tempAssignment;
                     Chute chuteTemp;
                     while (true) {
                         Random generator = new Random();
@@ -122,7 +121,7 @@ public class ConstructionHeuristic {
                             break;
                         }
                     }
-                    ArrayList <DestinationShift> newAssignment = new ArrayList <DestinationShift>();
+                    ArrayList <DestinationShift> newAssignment = new ArrayList<>();
                     for (DestinationShift tempDestShift : tempAssignment) {
                         int tempDest = tempDestShift.getDestination();
                         if (!blocked[currentDest][tempDest]) {
@@ -171,8 +170,8 @@ public class ConstructionHeuristic {
         for (int leftIndicator = 0; leftIndicator <= 1; leftIndicator++) {
             // Create array with chutes on corresponding side
             // Create queue with chutes on corresponding side
-            ArrayList < Chute > chutesSide = new ArrayList < Chute > ();;
-            Queue < Chute > chutesSideQueue = new LinkedList < Chute > ();
+            ArrayList < Chute > chutesSide = new ArrayList<>();
+            Queue < Chute > chutesSideQueue = new LinkedList<>();
             for (Chute chute : chutes) {
                 if (chute.getIsLeft() == leftIndicator) {
                     chutesSide.add(chute);
@@ -219,22 +218,17 @@ public class ConstructionHeuristic {
                 }
             }
         }
-        Solution solution = new Solution(chutes, workers);
-        return solution;
+        return new Solution(chutes, workers);
     }
-    public static void sortbyColumn(int arr[][], int col) {
+    public static void sortByColumn(int[][] arr, int col) {
         // Using built-in sort function Arrays.sort
-        Arrays.sort(arr, new Comparator < int[] > () {
-            @Override
-            // Compare values according to columns
-            public int compare(final int[] entry1,
-                               final int[] entry2) {
-                // To sort in descending order
-                if (entry1[col] < entry2[col])
-                    return 1;
-                else
-                    return -1;
-            }
+        // Compare values according to columns
+        Arrays.sort(arr, (entry1, entry2) -> {
+            // To sort in descending order
+            if (entry1[col] < entry2[col])
+                return 1;
+            else
+                return -1;
         });
     }
 }

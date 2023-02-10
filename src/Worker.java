@@ -1,16 +1,16 @@
 import java.util.ArrayList;
 
 public class Worker {
-    private int workerNumber;
-    private int isLeft;
+    private final int workerNumber;
+    private final int isLeft;
     private ArrayList<Chute> chuteAssignment;
-    private ArrayList<Worker> neighboringWorkers;
+    private final ArrayList<Worker> neighboringWorkers;
     private int expectedContainers;
     public Worker(int workerNumber, int isLeft, ArrayList<Worker> neighboringWorkers) {
         this.workerNumber = workerNumber;
         this.isLeft = isLeft;
         this.neighboringWorkers = neighboringWorkers;
-        this.chuteAssignment = new ArrayList<Chute>();
+        this.chuteAssignment = new ArrayList<>();
     }
 
     public int getWorkerNumber() {

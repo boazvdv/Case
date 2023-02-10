@@ -29,6 +29,7 @@ public class HelperFunctions {
                 System.out.println();
             }
             System.out.println();
+            System.out.println("Objective value: " + calculateObjective(solution));
         }
     }
 
@@ -54,7 +55,6 @@ public class HelperFunctions {
                 }
             }
         }
-        int sumWorkload = maxWorkloadLeft + maxWorkloadRight;
-        return sumWorkload;
+        return maxWorkloadLeft + maxWorkloadRight;
     }
 }

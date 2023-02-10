@@ -1,8 +1,8 @@
 public class DestinationShift {
-	private int destination;
-	private int shift;
-	private int isLeft;
-	private int expectedContainers;
+	private final int destination;
+	private final int shift;
+	private final int isLeft;
+	private final int expectedContainers;
 	public DestinationShift(int destination, int shift, int isLeft, int expectedContainers) {
 		this.destination = destination;
 		this.shift = shift;
