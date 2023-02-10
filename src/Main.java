@@ -9,18 +9,12 @@ public class Main {
         try {
             // Read file
             PostInstance instance = PostInstance.read(fileToRead);
+            Solution solution = SimulatedAnnealing.main(instance);
 
-            // Construct initial solution
-            Solution solution = ConstructionHeuristic.main(instance);
+            boolean printChutes = true;
+            boolean printWorkers = true;
 
-            // Calculate objective
-            int objective = HelperFunctions.calculateObjective(solution);
-
-            // Local search
-            solution = LocalSearch.workerLocalSearch(instance, solution);
-
-            // Print results
-            HelperFunctions.printResults(solution);
+            HelperFunctions.printResults(solution, printChutes, printWorkers);
 
         } catch (FileNotFoundException ex) {
             System.out.println("There was an error reading file " + fileToRead);
