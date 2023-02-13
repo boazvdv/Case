@@ -11,7 +11,7 @@ public class Main {
             PostInstance instance = PostInstance.read(fileToRead);
             Solution solution = SimulatedAnnealing.main(instance);
 
-            boolean printChutes = true;
+            boolean printChutes = false;
             boolean printWorkers = true;
 
             HelperFunctions.printResults(solution, printChutes, printWorkers);

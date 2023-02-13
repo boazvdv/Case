@@ -3,10 +3,89 @@ import java.util.Random;
 
 public class LocalSearch {
 
-    public static Solution chuteLocalSearch(PostInstance instance, Solution solution) {
+    public static Solution chuteLocalSearch(PostInstance instance, Solution solution, int chuteSearchType) {
         Chute[] chutes = solution.getChutes();
         Worker[] workers = solution.getWorkers();
 
+        if (chuteSearchType == 1) {
+            Random generator = new Random();
+            while (true) {
+                int randomIndex = generator.nextInt(chutes.length);
+                int otherRandomIndex = generator.nextInt(chutes.length);
+                Chute chute = chutes[randomIndex];
+                Chute otherChute = chutes[otherRandomIndex];
+                if (chute.getChuteNumber() != otherChute.getChuteNumber() && chute.getIsLeft() == otherChute.getIsLeft()) {
+                    for (DestinationShift ds : chute.getDestShiftAssignment()) {
+                        for (DestinationShift otherDs : otherChute.getDestShiftAssignment()) {
+                            // check if postalcode block isn't violated in firstchute
+                            boolean blocked = false;
+                            for (int k = 0; k < chute.getDestShiftAssignment().size() - 1; k++) {
+                                if (instance.getBlocked()[chute.getDestShiftAssignment().get(k).getDestination()][otherDs.getDestination()] == true && chute.getDestShiftAssignment().get(k) != ds) {
+                                    blocked = true;
+                                }
+                            }
+                            // check if postalcode block isn't violated in second chute
+                            for (int l = 0; l < otherChute.getDestShiftAssignment().size() - 1; l++) {
+                                if (instance.getBlocked()[otherChute.getDestShiftAssignment().get(l).getDestination()][ds.getDestination()] == true && otherChute.getDestShiftAssignment().get(l) != otherDs) {
+                                    blocked = true;
+                                }
+                            }
+
+                            if (blocked == false) {
+                                ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
+                                ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
+
+                                newAssignment.remove(ds);
+                                newAssignment.add(otherDs);
+
+                                otherNewAssignment.remove(otherDs);
+                                otherNewAssignment.add(ds);
+
+                                chute.setDestShiftAssignment(newAssignment);
+                                otherChute.setDestShiftAssignment(otherNewAssignment);
+
+                                return new Solution(chutes, workers);
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else if (chuteSearchType == 2) {
+            Random generator = new Random();
+            while(true) {
+                int randomIndex = generator.nextInt(chutes.length);
+                int otherRandomIndex = generator.nextInt(chutes.length);
+                Chute chute = chutes[randomIndex];
+                Chute otherChute = chutes[otherRandomIndex];
+                if(chute.getChuteNumber() != otherChute.getChuteNumber() && chute.getIsLeft() == otherChute.getIsLeft() && chute.getDestShiftAssignment().size()!=0) {
+                    int randomDs = generator.nextInt(chute.getDestShiftAssignment().size());
+                    DestinationShift ds = chute.getDestShiftAssignment().get(randomDs);
+                    boolean blocked = false;
+                    for(int l = 0; l < otherChute.getDestShiftAssignment().size()-1; l++) {
+                        if(instance.getBlocked()[otherChute.getDestShiftAssignment().get(l).getDestination()][ds.getDestination()] == true) {
+                            blocked = true;
+                        }
+                    }
+
+                    if(!blocked && otherChute.getDestShiftAssignment().size() < otherChute.getMaxContainers()) {
+                        ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
+                        ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
+
+                        newAssignment.remove(ds);
+                        otherNewAssignment.add(ds);
+
+                        chute.setDestShiftAssignment(newAssignment);
+                        otherChute.setDestShiftAssignment(otherNewAssignment);
+
+
+                        return new Solution(chutes, workers);
+                    }
+
+                }
+            }
+        }
         return new Solution(chutes, workers);
     }
 
@@ -113,5 +192,16 @@ public class LocalSearch {
         }
 
         return new Solution(chutes, workers);
+    }
+
+    public static boolean postalCodeBlock(PostInstance instance, DestinationShift destShift, Chute chuteToMove) {
+        boolean blocked = false;
+        for(int i = 0; i < chuteToMove.getDestShiftAssignment().size(); i++) {
+            if(instance.getBlocked()[chuteToMove.getDestShiftAssignment().get(i).getDestination()][destShift.getDestination()]) {
+                System.out.println("Block found at " + i);
+                blocked = true;
+            }
+        }
+        return blocked;
     }
 }

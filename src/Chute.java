@@ -37,4 +37,11 @@ public class Chute {
     }
     public void addNeighboringChute(Chute newNeighboringChute) { this.neighboringChutes.add(newNeighboringChute); }
 
+    public Chute clone() {
+        try {
+            return (Chute) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return new Chute(this.chuteNumber, this.isLeft, this.distanceFront, this.maxContainers, this.neighboringChutes);
+        }
+    }
 }

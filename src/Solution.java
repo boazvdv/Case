@@ -10,4 +10,12 @@ public class Solution {
     public Worker[] getWorkers() { return workers; }
     public void setChutes(Chute[] newChutes) { this.chutes = newChutes; }
     public void setWorkers(Worker[] newWorkers) { this.workers = newWorkers; }
+
+    public Solution clone() {
+        try {
+            return (Solution) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return new Solution(this.chutes, this.workers);
+        }
+    }
 }
