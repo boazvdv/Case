@@ -28,9 +28,9 @@ public class HelperFunctions {
                 System.out.print("]  -  Expected containers: " + worker.getExpectedContainers());
                 System.out.println();
             }
-            System.out.println();
-            System.out.println("Objective value: " + calculateObjective(solution));
         }
+        System.out.println();
+        System.out.println("Objective value: " + calculateObjective(solution));
     }
 
     public static int calculateObjective(Solution solution) {

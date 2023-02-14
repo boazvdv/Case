@@ -17,21 +17,21 @@ public class LocalSearch {
                 if (chute.getChuteNumber() != otherChute.getChuteNumber() && chute.getIsLeft() == otherChute.getIsLeft()) {
                     for (DestinationShift ds : chute.getDestShiftAssignment()) {
                         for (DestinationShift otherDs : otherChute.getDestShiftAssignment()) {
-                            // check if postalcode block isn't violated in firstchute
+                            // check if postal code block isn't violated in first chute
                             boolean blocked = false;
                             for (int k = 0; k < chute.getDestShiftAssignment().size() - 1; k++) {
-                                if (instance.getBlocked()[chute.getDestShiftAssignment().get(k).getDestination()][otherDs.getDestination()] == true && chute.getDestShiftAssignment().get(k) != ds) {
+                                if (instance.getBlocked()[chute.getDestShiftAssignment().get(k).getDestination()][otherDs.getDestination()] && chute.getDestShiftAssignment().get(k) != ds) {
                                     blocked = true;
                                 }
                             }
-                            // check if postalcode block isn't violated in second chute
+                            // check if postal code block isn't violated in second chute
                             for (int l = 0; l < otherChute.getDestShiftAssignment().size() - 1; l++) {
-                                if (instance.getBlocked()[otherChute.getDestShiftAssignment().get(l).getDestination()][ds.getDestination()] == true && otherChute.getDestShiftAssignment().get(l) != otherDs) {
+                                if (instance.getBlocked()[otherChute.getDestShiftAssignment().get(l).getDestination()][ds.getDestination()] && otherChute.getDestShiftAssignment().get(l) != otherDs) {
                                     blocked = true;
                                 }
                             }
 
-                            if (blocked == false) {
+                            if (!blocked) {
                                 ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
                                 ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
 
@@ -64,7 +64,7 @@ public class LocalSearch {
                     DestinationShift ds = chute.getDestShiftAssignment().get(randomDs);
                     boolean blocked = false;
                     for(int l = 0; l < otherChute.getDestShiftAssignment().size()-1; l++) {
-                        if(instance.getBlocked()[otherChute.getDestShiftAssignment().get(l).getDestination()][ds.getDestination()] == true) {
+                        if(instance.getBlocked()[otherChute.getDestShiftAssignment().get(l).getDestination()][ds.getDestination()]) {
                             blocked = true;
                         }
                     }
@@ -131,7 +131,7 @@ public class LocalSearch {
                 }
             } else if (searchType == 2) {
                 // Get the busiest worker and the least busy worker with spare capacity
-                // Move chute from busiest to least busy
+                // Move chute from busiest to the least busy
                 Worker busiestWorker = workersSide[0];
                 Worker leastBusyWorker = workersSide[0];
                 for (Worker worker: workersSide) {
@@ -144,7 +144,7 @@ public class LocalSearch {
                         }
                     }
                 }
-                boolean destinationReached = false;
+                boolean destinationReached = busiestWorker.getWorkerNumber() == leastBusyWorker.getWorkerNumber();
                 Worker workerRemove = busiestWorker;
                 Worker workerAdd = busiestWorker;
                 ArrayList < Chute > assignmentRemove;
@@ -192,16 +192,5 @@ public class LocalSearch {
         }
 
         return new Solution(chutes, workers);
-    }
-
-    public static boolean postalCodeBlock(PostInstance instance, DestinationShift destShift, Chute chuteToMove) {
-        boolean blocked = false;
-        for(int i = 0; i < chuteToMove.getDestShiftAssignment().size(); i++) {
-            if(instance.getBlocked()[chuteToMove.getDestShiftAssignment().get(i).getDestination()][destShift.getDestination()]) {
-                System.out.println("Block found at " + i);
-                blocked = true;
-            }
-        }
-        return blocked;
     }
 }

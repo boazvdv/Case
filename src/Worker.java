@@ -32,12 +32,4 @@ public class Worker {
         }
         this.expectedContainers = newExpectedContainers;
     }
-
-    public Worker clone() {
-        try {
-            return (Worker) super.clone();
-        } catch (CloneNotSupportedException e) {
-            return new Worker(this.workerNumber, this.isLeft, this.neighboringWorkers);
-        }
-    }
 }
