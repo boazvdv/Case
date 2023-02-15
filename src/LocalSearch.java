@@ -14,40 +14,40 @@ public class LocalSearch {
                 int otherRandomIndex = generator.nextInt(chutes.length);
                 Chute chute = chutes[randomIndex];
                 Chute otherChute = chutes[otherRandomIndex];
-                if (chute.getChuteNumber() != otherChute.getChuteNumber() && chute.getIsLeft() == otherChute.getIsLeft()) {
-                    for (DestinationShift ds : chute.getDestShiftAssignment()) {
-                        for (DestinationShift otherDs : otherChute.getDestShiftAssignment()) {
-                            // check if postal code block isn't violated in first chute
-                            boolean blocked = false;
-                            for (int k = 0; k < chute.getDestShiftAssignment().size() - 1; k++) {
-                                if (instance.getBlocked()[chute.getDestShiftAssignment().get(k).getDestination()][otherDs.getDestination()] && chute.getDestShiftAssignment().get(k) != ds) {
-                                    blocked = true;
-                                }
-                            }
-                            // check if postal code block isn't violated in second chute
-                            for (int l = 0; l < otherChute.getDestShiftAssignment().size() - 1; l++) {
-                                if (instance.getBlocked()[otherChute.getDestShiftAssignment().get(l).getDestination()][ds.getDestination()] && otherChute.getDestShiftAssignment().get(l) != otherDs) {
-                                    blocked = true;
-                                }
-                            }
-
-                            if (!blocked) {
-                                ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
-                                ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
-
-                                newAssignment.remove(ds);
-                                newAssignment.add(otherDs);
-
-                                otherNewAssignment.remove(otherDs);
-                                otherNewAssignment.add(ds);
-
-                                chute.setDestShiftAssignment(newAssignment);
-                                otherChute.setDestShiftAssignment(otherNewAssignment);
-
-                                return new Solution(chutes, workers);
-
-                            }
+                if (chute.getChuteNumber() != otherChute.getChuteNumber() && chute.getIsLeft() == otherChute.getIsLeft() && chute.getDestShiftAssignment().size()!=0 && otherChute.getDestShiftAssignment().size()!=0) {
+                    int randomDsIndex = generator.nextInt(chute.getDestShiftAssignment().size());
+                    int otherRandomDsIndex = generator.nextInt(otherChute.getDestShiftAssignment().size());
+                    DestinationShift ds = chute.getDestShiftAssignment().get(randomDsIndex);
+                    DestinationShift otherDs = otherChute.getDestShiftAssignment().get(otherRandomDsIndex);
+                    // check if postal code block isn't violated in first chute
+                    boolean blocked = false;
+                    for (int k = 0; k < chute.getDestShiftAssignment().size() - 1; k++) {
+                        if (instance.getBlocked()[chute.getDestShiftAssignment().get(k).getDestination()][otherDs.getDestination()] && chute.getDestShiftAssignment().get(k) != ds) {
+                            blocked = true;
                         }
+                    }
+                    // check if postal code block isn't violated in second chute
+                    for (int l = 0; l < otherChute.getDestShiftAssignment().size() - 1; l++) {
+                        if (instance.getBlocked()[otherChute.getDestShiftAssignment().get(l).getDestination()][ds.getDestination()] && otherChute.getDestShiftAssignment().get(l) != otherDs) {
+                            blocked = true;
+                        }
+                    }
+
+                    if (!blocked) {
+                        ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
+                        ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
+
+                        newAssignment.remove(ds);
+                        newAssignment.add(otherDs);
+
+                        otherNewAssignment.remove(otherDs);
+                        otherNewAssignment.add(ds);
+
+                        chute.setDestShiftAssignment(newAssignment);
+                        otherChute.setDestShiftAssignment(otherNewAssignment);
+
+                        return new Solution(chutes, workers);
+
                     }
                 }
             }

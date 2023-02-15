@@ -11,7 +11,8 @@ public class PostInstance {
     private final int totParcels;
     private final int numWorkers;
     private final int maxChutesPerWorker;
-
+    private double penaltyDistanceFront;
+    private double penaltySameDestination;
     /**
      * Constructor of a PostNL instance
      * @param chutes: Information about the chutes. The first column is 1 if the chute is on the left side. The second column states
@@ -30,6 +31,8 @@ public class PostInstance {
         this.totParcels = totParcels;
         this.numWorkers = 10;
         this.maxChutesPerWorker = 5;
+        this.penaltyDistanceFront = 0;
+        this.penaltySameDestination = 0;
     }
 
     // Get the information about the chutes
@@ -70,6 +73,21 @@ public class PostInstance {
     // Get the number of destinations
     public int getNumberOfDest() {
         return blocked.length;
+    }
+
+    public double getPenaltyDistanceFront() {
+        return this.penaltyDistanceFront;
+    }
+
+    public double getPenaltySameDestination() {
+        return this.penaltySameDestination;
+    }
+    public void setPenaltyDistanceFront(double penalty) {
+        this.penaltyDistanceFront = penalty;
+    }
+
+    public void setPenaltySameDestination(double penalty) {
+        this.penaltySameDestination = penalty;
     }
 
     /**

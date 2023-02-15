@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class HelperFunctions {
-    public static void printResults(Solution solution, boolean printChutes, boolean printWorkers) {
+    public static void printResults(Solution solution, PostInstance instance, boolean printChutes, boolean printWorkers) {
         Chute[] chutes = solution.getChutes();
         Worker[] workers = solution.getWorkers();
 
@@ -30,12 +30,21 @@ public class HelperFunctions {
             }
         }
         System.out.println();
-        System.out.println("Objective value: " + calculateObjective(solution));
+        System.out.println("Objective value: " + calculateObjective(solution, instance));
     }
 
-    public static int calculateObjective(Solution solution) {
+    public static double calculateObjective(Solution solution, PostInstance instance) {
+        Chute[] chutes = solution.getChutes();
         Worker[] workers = solution.getWorkers();
 
+        double penaltyDistanceFront = instance.getPenaltyDistanceFront();
+        double penaltySameDestination = instance.getPenaltySameDestination();
+
+        int maxWorkload;
+        int distanceFront;
+        int sameDestination;
+
+        // Calculate maximum workload
         int maxWorkloadLeft = 0;
         int maxWorkloadRight = 0;
 
@@ -55,6 +64,33 @@ public class HelperFunctions {
                 }
             }
         }
-        return maxWorkloadLeft + maxWorkloadRight;
+
+        maxWorkload = maxWorkloadLeft + maxWorkloadRight;
+
+        // Calculate distance from front
+        distanceFront = 0;
+        for (Chute chute : chutes) {
+            for (DestinationShift destinationShift : chute.getDestShiftAssignment()) {
+                distanceFront += destinationShift.getExpectedContainers() * chute.getDistanceFront();
+            }
+        }
+
+        // Calculate distance between the same destination
+        sameDestination = 0;
+        for (Chute firstChute : chutes) {
+            for (Chute secondChute : chutes) {
+                if (firstChute.getChuteNumber() < secondChute.getChuteNumber() && firstChute.getIsLeft() == secondChute.getIsLeft()) {
+                    for (DestinationShift firstDestShift : firstChute.getDestShiftAssignment()) {
+                        for (DestinationShift secondDestShift : secondChute.getDestShiftAssignment()) {
+                            if (firstDestShift.getDestination() == secondDestShift.getDestination()) {
+                                sameDestination += (secondChute.getDistanceFront() - firstChute.getDistanceFront());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return maxWorkload + penaltyDistanceFront * distanceFront + penaltySameDestination * sameDestination;
     }
 }

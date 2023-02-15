@@ -8,26 +8,29 @@ public class SimulatedAnnealing {
         int chuteSearchType = 2;
         int workerSearchType = 2;
 
+
         // Construct initial solution
         Solution currentSolution = ConstructionHeuristic.main(instance);
-        int currentObjective = HelperFunctions.calculateObjective(currentSolution);
+        double currentObjective = HelperFunctions.calculateObjective(currentSolution, instance);
 
         Solution bestSolution = currentSolution;
-        int bestObjective = currentObjective;
+        double bestObjective = currentObjective;
 
         Solution newSolution;
 
-        int delta;
+        double delta;
         double p;
         double P;
-        double T = 1;
-        double stoppingCriterion = 10E-10;
+        double T = 10;
+        double stoppingCriterion = 10E-4;
         double alpha = 0.9999;
 
         boolean searchChutes = true;
         Random r = new Random();
 
+        int iteration = 0;
         while (T > stoppingCriterion) {
+            System.out.println(T);
             HashMap<Integer, ArrayList<Chute>> workerNumberToChuteAssignment = saveChuteAssignment(currentSolution);
             HashMap<Integer, ArrayList<DestinationShift>> chuteNumberToDestShiftAssignment = saveDestShiftAssignment(currentSolution);
 
@@ -39,7 +42,7 @@ public class SimulatedAnnealing {
                 newSolution = LocalSearch.workerLocalSearch(instance, currentSolution, workerSearchType);
                 searchChutes = true;
             }
-            int newObjective = HelperFunctions.calculateObjective(newSolution);
+            double newObjective = HelperFunctions.calculateObjective(currentSolution, instance);
             if (newObjective < currentObjective) {
                 currentObjective = newObjective;
                 currentSolution = newSolution;
@@ -63,7 +66,7 @@ public class SimulatedAnnealing {
                 }
             }
         }
-        System.out.println("Min. objective: " + bestObjective);
+        System.out.println("Best objective: " + bestObjective);
         return bestSolution;
     }
 
