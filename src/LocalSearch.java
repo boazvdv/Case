@@ -1,9 +1,11 @@
+import SimulationPackage.InstancePostNL;
+
 import java.util.ArrayList;
 import java.util.Random;
 
 public class LocalSearch {
 
-    public static Solution chuteLocalSearch(PostInstance instance, Solution solution, int chuteSearchType) {
+    public static Solution chuteLocalSearch(InstancePostNL instance, Solution solution, int chuteSearchType) {
         Chute[] chutes = solution.getChutes();
         Worker[] workers = solution.getWorkers();
 
@@ -89,7 +91,7 @@ public class LocalSearch {
         return new Solution(chutes, workers);
     }
 
-    public static Solution workerLocalSearch(PostInstance instance, Solution solution, int searchType) {
+    public static Solution workerLocalSearch(InstancePostNL instance, Solution solution, int searchType) {
         Chute[] chutes = solution.getChutes();
         Worker[] workers = solution.getWorkers();
 

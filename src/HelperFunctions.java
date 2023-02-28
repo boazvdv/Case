@@ -1,7 +1,9 @@
+import SimulationPackage.InstancePostNL;
+
 import java.util.ArrayList;
 
 public class HelperFunctions {
-    public static void printResults(Solution solution, PostInstance instance, boolean printChutes, boolean printWorkers) {
+    public static void printResults(Solution solution, InstancePostNL instance, boolean printChutes, boolean printWorkers) {
         Chute[] chutes = solution.getChutes();
         Worker[] workers = solution.getWorkers();
 
@@ -30,67 +32,39 @@ public class HelperFunctions {
             }
         }
         System.out.println();
-        System.out.println("Objective value: " + calculateObjective(solution, instance));
+        System.out.println("Objective value: " + solution.getObjective(instance));
+    }
+    public static int[][] createDestinationShiftChuteMatrix(Solution solution, InstancePostNL instance) {
+        // Create D/S to chute matrix
+
+        int maxShift = 0;
+        for (int[] destShift : instance.getDestShift()) {
+            if (destShift[1] > maxShift) {
+                maxShift = destShift[1];
+            }
+        }
+
+        int[][] destinationShiftChuteMatrix = new int[instance.getNumberOfDest()][maxShift+1];
+
+        for (Chute chute : solution.getChutes()) {
+            for (DestinationShift destShift : chute.getDestShiftAssignment()) {
+                destinationShiftChuteMatrix[destShift.getDestination()][destShift.getShift()] = chute.getChuteNumber();
+            }
+        }
+
+        return destinationShiftChuteMatrix;
     }
 
-    public static double calculateObjective(Solution solution, PostInstance instance) {
-        Chute[] chutes = solution.getChutes();
-        Worker[] workers = solution.getWorkers();
+    public static int[][] createWorkerChuteMatrix(Solution solution, InstancePostNL instance) {
+        // Create worker to chute matrix
+        int[][] workerChuteMatrix = new int[instance.getEmployees()][instance.getNumberOfChutes()];
 
-        double penaltyDistanceFront = instance.getPenaltyDistanceFront();
-        double penaltySameDestination = instance.getPenaltySameDestination();
-
-        int maxWorkload;
-        int distanceFront;
-        int sameDestination;
-
-        // Calculate maximum workload
-        int maxWorkloadLeft = 0;
-        int maxWorkloadRight = 0;
-
-        for (Worker worker : workers) {
-            int sumExpectedContainers = 0;
-            ArrayList<Chute> assignment = worker.getChuteAssignment();
-            for (Chute chute : assignment) {
-                sumExpectedContainers += chute.getExpectedContainers();
-            }
-            if (worker.getIsLeft() == 0) {
-                if (sumExpectedContainers > maxWorkloadLeft) {
-                    maxWorkloadLeft = sumExpectedContainers;
-                }
-            } else {
-                if (sumExpectedContainers > maxWorkloadRight) {
-                    maxWorkloadRight = sumExpectedContainers;
-                }
+        for (Worker worker : solution.getWorkers()) {
+            for (Chute chute : worker.getChuteAssignment()) {
+                workerChuteMatrix[worker.getWorkerNumber()][chute.getChuteNumber()] = 1;
             }
         }
 
-        maxWorkload = maxWorkloadLeft + maxWorkloadRight;
-
-        // Calculate distance from front
-        distanceFront = 0;
-        for (Chute chute : chutes) {
-            for (DestinationShift destinationShift : chute.getDestShiftAssignment()) {
-                distanceFront += destinationShift.getExpectedContainers() * chute.getDistanceFront();
-            }
-        }
-
-        // Calculate distance between the same destination
-        sameDestination = 0;
-        for (Chute firstChute : chutes) {
-            for (Chute secondChute : chutes) {
-                if (firstChute.getChuteNumber() < secondChute.getChuteNumber() && firstChute.getIsLeft() == secondChute.getIsLeft()) {
-                    for (DestinationShift firstDestShift : firstChute.getDestShiftAssignment()) {
-                        for (DestinationShift secondDestShift : secondChute.getDestShiftAssignment()) {
-                            if (firstDestShift.getDestination() == secondDestShift.getDestination()) {
-                                sameDestination += (secondChute.getDistanceFront() - firstChute.getDistanceFront());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return maxWorkload + penaltyDistanceFront * distanceFront + penaltySameDestination * sameDestination;
+        return workerChuteMatrix;
     }
 }

@@ -1,17 +1,14 @@
+import SimulationPackage.InstancePostNL;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
 public class SimulatedAnnealing {
-    public static Solution main(PostInstance instance) {
-
-        int chuteSearchType = 2;
-        int workerSearchType = 2;
-
-
+    public static Solution main(InstancePostNL instance) {
         // Construct initial solution
         Solution currentSolution = ConstructionHeuristic.main(instance);
-        double currentObjective = HelperFunctions.calculateObjective(currentSolution, instance);
+        double currentObjective = currentSolution.getObjective(instance);
 
         Solution bestSolution = currentSolution;
         double bestObjective = currentObjective;
@@ -28,21 +25,23 @@ public class SimulatedAnnealing {
         boolean searchChutes = true;
         Random r = new Random();
 
-        int iteration = 0;
         while (T > stoppingCriterion) {
-            System.out.println(T);
             HashMap<Integer, ArrayList<Chute>> workerNumberToChuteAssignment = saveChuteAssignment(currentSolution);
             HashMap<Integer, ArrayList<DestinationShift>> chuteNumberToDestShiftAssignment = saveDestShiftAssignment(currentSolution);
 
             if (searchChutes) {
-                newSolution = LocalSearch.chuteLocalSearch(instance, currentSolution, chuteSearchType);
+                int randomIndex = r.nextInt(2); // Randomly select local search type
+                randomIndex = randomIndex + 1;
+                newSolution = LocalSearch.chuteLocalSearch(instance, currentSolution, randomIndex);
                 searchChutes = false;
             }
             else {
-                newSolution = LocalSearch.workerLocalSearch(instance, currentSolution, workerSearchType);
+                int index = r.nextInt(3); // Randomly select local search type
+                index = index + 1;
+                newSolution = LocalSearch.workerLocalSearch(instance, currentSolution, index);
                 searchChutes = true;
             }
-            double newObjective = HelperFunctions.calculateObjective(currentSolution, instance);
+            double newObjective = currentSolution.getObjective(instance);
             if (newObjective < currentObjective) {
                 currentObjective = newObjective;
                 currentSolution = newSolution;
@@ -66,7 +65,6 @@ public class SimulatedAnnealing {
                 }
             }
         }
-        System.out.println("Best objective: " + bestObjective);
         return bestSolution;
     }
 

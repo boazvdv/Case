@@ -21,7 +21,6 @@ public class Chute {
     public int getIsLeft() { return isLeft; }
     public int getDistanceFront() { return distanceFront; }
     public int getMaxContainers() { return maxContainers; }
-    public ArrayList<Chute> getNeighboringChutes() { return neighboringChutes; }
     public ArrayList<DestinationShift> getDestShiftAssignment() { return destShiftAssignment; }
     public void setDestShiftAssignment(ArrayList<DestinationShift> newDestShiftAssignment) { this.destShiftAssignment = newDestShiftAssignment; }
     public int getExpectedContainers() {
