@@ -35,7 +35,8 @@ public class GenerateResults {
 
     }
     public static void Simulation(int numRuns, InstancePostNL instance) {
-        System.out.println("Generating solution using heuristic...\n");
+        System.out.println("Generating solution using heuristic...");
+        System.out.println("[ a = " + instance.getPenaltyDistanceFront() + " | B = " + instance.getPenaltySameDestination() + " ]\n");
         long begin = System.nanoTime();
         Solution solution = SimulatedAnnealing.main(instance);
         long end = System.nanoTime();

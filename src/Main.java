@@ -6,24 +6,25 @@ import java.io.FileNotFoundException;
 
 public class Main {
     public static void main(String[] args) {
-        boolean generateResultsHeuristic = false;
-        boolean generateResultsSimulation = true;
+        boolean generateResultsHeuristic = true;
+        boolean generateResultsSimulation = false;
 
         // Read file
         File fileToRead = new File("DataChanged.txt");
         try {
-            // Generate results for heuristic
             InstancePostNL instance = InstancePostNL.read(fileToRead);
             double penaltyDistanceFront = 0.02;
             double penaltySameDestination = 0.3;
             instance.setPenaltyDistanceFront(penaltyDistanceFront);
             instance.setPenaltySameDestination(penaltySameDestination);
 
+            // Generate results for heuristic
             int numRunsHeuristic = 10;
             if (generateResultsHeuristic) {
                 GenerateResults.Heuristic(numRunsHeuristic, instance);
             }
 
+            // Generate results for simulation
             int numRunsSimulation = 1000;
             if (generateResultsSimulation) {
                 GenerateResults.Simulation(numRunsSimulation, instance);
