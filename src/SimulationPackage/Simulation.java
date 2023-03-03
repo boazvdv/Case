@@ -1,7 +1,6 @@
 package SimulationPackage;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -10,9 +9,8 @@ import java.util.Queue;
 public class Simulation {
 
 	// Time variable and creation of the event list with events to do
-	private int time;
+	private double time;
 	PriorityQueue<Action> events = new PriorityQueue<Action>();
-	private int parcel;
 
 	// Decision variables given into the system
 	private int[][] chutesEmpl; // Matrix that stores which employee is allocated to which chutes
@@ -26,6 +24,7 @@ public class Simulation {
 	private boolean[] chuteStopped; // Array that says whether the work at a chute is stopped due to a parcel with capacity at the roll container
 	List<Queue<DestinationShift>> queues;
 	private int currentTotQueue;
+	private int parcelNumber;
 
 	private int[] containersAvailable; // Array to store the number of available (unused) roll containers per chute
 	private int[][] storageLeft; // Array to store the storage left per roll container (rows stand for chutes and columns for which roll container)
@@ -39,8 +38,14 @@ public class Simulation {
 	private final int[][] destShift;
 	private final int capContainer;
 
+	private final double arrivalTime;
+	private final double handlingTime;
+	private final double emptyTime;
+	private final double walkingSpeed;
+	private final double beltSpeed;
+
 	// Performance metrics
-	private int totalQueue;
+	private double totalQueue;
 	private int distanceWalked;
 	private int parcelsRemoved;
 
@@ -48,18 +53,24 @@ public class Simulation {
 	// Parcel information
 	private int[][] parcelSequence;
 
-	public Simulation(InstancePostNL instance) {
-		this.parcelSequence = instance.getParcelSequence();
+	public Simulation(InstancePostNL postnlInstance) {
+		this.parcelSequence = postnlInstance.getParcelSequence();
 
-		this.currentChuteEmpl = new int[instance.getEmployees()];
-		this.queueSizes = new int[instance.getNumberOfChutes()];
+		this.currentChuteEmpl = new int[postnlInstance.getEmployees()];
+		this.queueSizes = new int[postnlInstance.getNumberOfChutes()];
 
-		this.chuteCapacity = instance.getCapacityChute();
-		this.numberChutes = instance.getNumberOfChutes();
-		this.numberEmployees = instance.getEmployees();
-		this.chutes = instance.getChutes();
-		this.destShift = instance.getDestShift();
+		this.chuteCapacity = postnlInstance.getCapacityChute();
+		this.numberChutes = postnlInstance.getNumberOfChutes();
+		this.numberEmployees = postnlInstance.getEmployees();
+		this.chutes = postnlInstance.getChutes();
+		this.destShift = postnlInstance.getDestShift();
 		this.capContainer = 50;
+
+		this.arrivalTime =  0.42; // seconds
+		this.handlingTime = 3; // seconds
+		this.emptyTime = 15; // seconds
+		this.walkingSpeed = 1.2; // meter/seconds
+		this.beltSpeed = 2.0; // meter/seconds
 
 		this.emplOfChute = new int[this.numberChutes];
 
@@ -170,9 +181,10 @@ public class Simulation {
 
 		// Initialise the time
 		this.time = 0;
+		this.parcelNumber = 0;
 
-		int dest = this.parcelSequence[this.time][0];
-		int shift = this.parcelSequence[this.time][1];
+		int dest = this.parcelSequence[this.parcelNumber][0];
+		int shift = this.parcelSequence[this.parcelNumber][1];
 		int chute = this.destShiftToChute[dest][shift];
 
 		// Create first parcel arrival
@@ -199,6 +211,7 @@ public class Simulation {
 				this.emptied();
 		}
 
+		//System.out.println("End-time: " + this.time/3600);
 		//System.out.println(Arrays.deepToString(this.storageLeft).replace("], ", "]\n"));
 	}
 
@@ -207,7 +220,7 @@ public class Simulation {
 		Action toDo = this.events.poll();
 
 		// Update the performance metrics
-		int timeElapsed = toDo.getTime() - this.time;
+		double timeElapsed = toDo.getTime() - this.time;
 		this.totalQueue = totalQueue + timeElapsed * this.currentTotQueue;
 
 		// Get information about the action to do
@@ -215,20 +228,21 @@ public class Simulation {
 		int newDest = toDo.getDest();
 		int newShift = toDo.getShift();
 
-		int timeAtChute = 0;
+		double timeAtChute = 0;
 		if (toDo.getChute() < 20)
-			timeAtChute = this.time + 30 + 4 * toDo.getChute();
+			timeAtChute = this.time + (30 + 4 * toDo.getChute()) / this.beltSpeed;
 		else
-			timeAtChute = this.time + 170 + 4 * (39 - toDo.getChute());
+			timeAtChute = this.time + (170 + 4 * (39 - toDo.getChute())) / this.beltSpeed;
 
 		this.events.add(new Action(timeAtChute, "newParcel", toDo.getChute(), newDest, newShift));
 
 		// Create a new parcel arrival and add it to the event list
-		if (this.time + 1 < this.parcelSequence.length) {
-			int dest = this.parcelSequence[this.time + 1][0];
-			int shift = this.parcelSequence[this.time + 1][1];
+		if (this.parcelNumber + 1 < this.parcelSequence.length) {
+			this.parcelNumber++;
+			int dest = this.parcelSequence[this.parcelNumber][0];
+			int shift = this.parcelSequence[this.parcelNumber][1];
 			int chute = this.destShiftToChute[dest][shift];
-			this.events.add(new Action(this.time+1, "toConveyor", chute, dest, shift));
+			this.events.add(new Action(this.time+arrivalTime, "toConveyor", chute, dest, shift));
 		}
 
 	}
@@ -241,7 +255,7 @@ public class Simulation {
 		Action toDo = this.events.poll();
 
 		// Update the performance metrics
-		int timeElapsed = toDo.getTime() - this.time;
+		double timeElapsed = toDo.getTime() - this.time;
 		this.totalQueue = totalQueue + timeElapsed * this.currentTotQueue;
 
 		// Get information about the action to do
@@ -249,22 +263,12 @@ public class Simulation {
 		int newDest = toDo.getDest();
 		int newShift = toDo.getShift();
 
-		/*
-		// Create a new parcel arrival and add it to the event list
-		if (this.time + 1 < this.parcelSequence.length) {
-			int dest = this.parcelSequence[this.time + 1][0];
-			int shift = this.parcelSequence[this.time + 1][1];
-			int chute = this.destShiftToChute[dest][shift];
-			this.events.add(new Action(this.time+1, "newParcel", chute, dest, shift));
-		}
-		*/
-
 		// Save the chute that the parcel needs to go to and the employee that is allocated to that chute
 		int toChute = toDo.getChute();
 		int toEmployee = this.emplOfChute[toChute];
 
 
-//		// If the queue get bigger than the capacity, the parcel gets removed
+		// If the queue get bigger than the capacity, the parcel gets removed
 //		if (queueSizes[toChute] == chuteCapacity) {
 //			parcelsRemoved++;
 //			if (queueSizes[toChute] - queueSizes[currentChuteEmpl[toEmployee]] > 2) { // PARAMETER TUNING HERE
@@ -279,9 +283,9 @@ public class Simulation {
 		// If the queue get bigger than the capacity, the parcel gets removed
 		if (queueSizes[toChute] == chuteCapacity) {
 			parcelsRemoved++;
-			this.events.add(new Action(this.time + 280, "newParcel", toChute, newDest, newShift));
-			if (queueSizes[toChute] - queueSizes[currentChuteEmpl[toEmployee]] > 2) { // PARAMETER TUNING HERE
-				this.events.add(new Action(this.time + 8 * Math.abs(toChute - currentChuteEmpl[toEmployee]), "walked", toChute, -1, -1));
+			this.events.add(new Action(this.time + 280/this.beltSpeed, "newParcel", toChute, newDest, newShift));
+			if (queueSizes[toChute] - queueSizes[currentChuteEmpl[toEmployee]] > 10) { // PARAMETER TUNING HERE
+				this.events.add(new Action(this.time + (4 * Math.abs(toChute - currentChuteEmpl[toEmployee]))/this.walkingSpeed, "walked", toChute, -1, -1));
 				distanceWalked += (4 * Math.abs(toChute - currentChuteEmpl[toEmployee]));
 				this.currentChuteEmpl[toEmployee] = toChute;
 			}
@@ -296,23 +300,15 @@ public class Simulation {
 		// If there is no queue at the chute and there is an employee working on the chute and the chute is not stopped, handle the parcel
 		if (queueSizes[toChute] == 0 && currentChuteEmpl[toEmployee] == toChute && !this.chuteStopped[toChute]) {
 			this.queueSizes[toChute]++;
-
-			int container = this.destShiftToRoll[newDest][newShift];
-			if (this.storageLeft[toChute][container] == 0) {
-				System.out.println("GOES WRONG");
-				this.chuteStopped[toChute] = true;
-				return;
-			}
-
-			this.events.add(new Action(this.time + 8, "handled", toChute, newDest, newShift));
+			this.events.add(new Action(this.time + this.handlingTime, "handled", toChute, newDest, newShift));
 			return;
 		}
 
-		// If there is a queue at the chute and the queue is ten bigger than the chute the employee is 
+		// If there is a queue at the chute and the queue is ten bigger than the chute the employee is
 		// currently working on. Move the employee to the new chute // PARAMETER TUNING HERE
 		if ((queueSizes[toChute] - queueSizes[currentChuteEmpl[toEmployee]] > 18 || queueSizes[currentChuteEmpl[toEmployee]] == 0) && !this.chuteStopped[toChute]) {
 			this.queueSizes[toChute]++;
-			this.events.add(new Action(this.time + 8 * Math.abs(toChute - currentChuteEmpl[toEmployee]), "walked", toChute, -1, -1));
+			this.events.add(new Action(this.time + (4 * Math.abs(toChute - currentChuteEmpl[toEmployee]))/this.walkingSpeed, "walked", toChute, -1, -1));
 			distanceWalked += (4 * Math.abs(toChute - currentChuteEmpl[toEmployee]));
 			this.currentChuteEmpl[toEmployee] = toChute;
 			return;
@@ -331,7 +327,7 @@ public class Simulation {
 		Action toDo = this.events.poll();
 
 		// Update the performance metrics
-		int timeElapsed = toDo.getTime() - this.time;
+		double timeElapsed = toDo.getTime() - this.time;
 		this.totalQueue = totalQueue + timeElapsed * this.currentTotQueue;
 
 		// Get information about the action to do (2)
@@ -352,16 +348,16 @@ public class Simulation {
 			//Check if the space on the just used roll container is 0
 			if (this.storageLeft[toChute][toContainer] == 0) {
 
-				// Calculate the time to empty and return the roll container
-				int newTime = 0;
+				// Calculate the distance to walk
+				double toWalk = 0;
 				if (toChute >= 21)
-					newTime = this.time + 60 + 16 * (toChute - 20);
+					toWalk = 8 * (toChute - 20);
 				else
-					newTime = this.time + 60 + 16 * toChute;
+					toWalk = 8 * toChute;
 
 				// Create the new event to empty the roll container
-				this.events.add(new Action(this.time+60, "emptied", toChute, toDo.getDest(), toDo.getShift()));
-				distanceWalked += ((newTime - this.time - 60) / 2);
+				this.events.add(new Action(this.time + this.emptyTime, "emptied", toChute, toDo.getDest(), toDo.getShift()));
+				//distanceWalked += toWalk; // COMMENTED OUT!!!
 
 				// If there are roll containers available, use one roll container for the to empty d/s roll container
 				if (this.containersAvailable[toChute] > 0) {
@@ -373,6 +369,9 @@ public class Simulation {
 			}
 
 			//Schedule the handling of the next parcel (if any)
+			if (this.chuteStopped[toChute])
+				return;
+
 			if (this.queueSizes[toChute] == 0 || this.chuteStopped[toChute]) {
 
 				int maxQueue = 0;
@@ -387,7 +386,7 @@ public class Simulation {
 				// Move the employee to the chute with the highest queue (if any)
 				if (maxQueue > 0) {
 					this.currentChuteEmpl[toEmployee] = newChute;
-					this.events.add(new Action(this.time + 8 * Math.abs(newChute - toChute), "walked", newChute, -1, -1));
+					this.events.add(new Action(this.time + (4 * Math.abs(newChute - toChute))/this.walkingSpeed, "walked", newChute, -1, -1));
 					distanceWalked += (4 * Math.abs(toChute - newChute));
 				}
 				return;
@@ -396,7 +395,7 @@ public class Simulation {
 
 			int newDest = this.queues.get(toChute).peek().getDestination();
 			int newShift = this.queues.get(toChute).peek().getShift();
-			this.events.add(new Action(this.time + 8, "handled", toChute, newDest, newShift));
+			this.events.add(new Action(this.time + this.handlingTime, "handled", toChute, newDest, newShift));
 
 		}
 
@@ -407,7 +406,7 @@ public class Simulation {
 
 		// Update the performance metrics
 		Action toDo = this.events.poll();
-		int timeElapsed = toDo.getTime() - this.time;
+		double timeElapsed = toDo.getTime() - this.time;
 		this.totalQueue = totalQueue + timeElapsed * this.currentTotQueue;
 
 		this.time = toDo.getTime();
@@ -441,13 +440,13 @@ public class Simulation {
 		if (!chuteStopped[chute] && this.currentChuteEmpl[employee] == chute && this.queueSizes[chute] > 0) {
 			int d = this.queues.get(chute).peek().getDestination();
 			int s = this.queues.get(chute).peek().getShift();
-			this.events.add(new Action(this.time + 8, "handled", chute, d, s));
+			this.events.add(new Action(this.time + this.handlingTime, "handled", chute, d, s));
 		}
 
 
 		// TO ADD: MOVE TO THE CHUTE IF IT HAS A HIGHER QUEUE
 		if ((queueSizes[chute] - queueSizes[currentChuteEmpl[employee]] > 0 || queueSizes[currentChuteEmpl[employee]] == 0) && !this.chuteStopped[chute] && this.queueSizes[chute] > 0) {
-			this.events.add(new Action(this.time + 8 * Math.abs(chute - currentChuteEmpl[employee]), "walked", chute, -1, -1));
+			this.events.add(new Action(this.time + (4 * Math.abs(chute - currentChuteEmpl[employee]))/this.walkingSpeed, "walked", chute, -1, -1));
 			distanceWalked += (4 * Math.abs(chute - currentChuteEmpl[employee]));
 			this.currentChuteEmpl[employee] = chute;
 		}
@@ -461,7 +460,7 @@ public class Simulation {
 
 		// Update the performance metrics
 		Action toDo = this.events.poll();
-		int timeElapsed = toDo.getTime() - this.time;
+		double timeElapsed = toDo.getTime() - this.time;
 		this.totalQueue = totalQueue + timeElapsed * this.currentTotQueue;
 
 		this.time = toDo.getTime();
@@ -473,7 +472,7 @@ public class Simulation {
 		if (!this.chuteStopped[toChute] && this.queueSizes[toChute] > 0) {
 			int newDest = this.queues.get(toChute).peek().getDestination();
 			int newShift = this.queues.get(toChute).peek().getShift();
-			this.events.add(new Action(this.time + 8, "handled", toChute, newDest, newShift));
+			this.events.add(new Action(this.time + this.handlingTime, "handled", toChute, newDest, newShift));
 		}
 
 
@@ -481,15 +480,19 @@ public class Simulation {
 
 
 	public double getAverageQueue() {
-		return Math.round((1.00 * this.totalQueue) / (this.time * this.numberChutes)*1000.0)/1000.0;
+		return Math.round((1.00 * this.totalQueue) / ((this.parcelSequence.length * this.arrivalTime) * this.numberChutes)*1000.0)/1000.0;
 	}
 
 	public int getDistanceWalked() {
-		return this.distanceWalked;
+		return this.distanceWalked/10;
 	}
 
 	public int getParcelsRemoved() {
 		return this.parcelsRemoved;
+	}
+
+	public double getTime() {
+		return this.time / 3600;
 	}
 
 

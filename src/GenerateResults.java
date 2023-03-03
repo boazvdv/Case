@@ -1,5 +1,7 @@
 import SimulationPackage.InstancePostNL;
 
+import java.util.Random;
+
 import static SimulationPackage.Main.runSimulation;
 
 public class GenerateResults {
@@ -34,7 +36,7 @@ public class GenerateResults {
         System.out.println("Average running time: " + arrayAverage(runningTimes));
 
     }
-    public static void Simulation(int numRuns, InstancePostNL instance) {
+    public static void Simulation(int numRuns, InstancePostNL instance, boolean randomize) {
         System.out.println("Generating solution using heuristic...");
         System.out.println("[ a = " + instance.getPenaltyDistanceFront() + " | B = " + instance.getPenaltySameDestination() + " ]\n");
         long begin = System.nanoTime();
@@ -45,14 +47,16 @@ public class GenerateResults {
 
         boolean printChutes = true;
         boolean printWorkers = true;
-        HelperFunctions.printResults(solution, instance, printChutes, printWorkers);
+//        HelperFunctions.printResults(solution, instance, printChutes, printWorkers);
 
         int[][] destinationShiftChuteMatrix = HelperFunctions.createDestinationShiftChuteMatrix(solution, instance);
         int[][] workerChuteMatrix = HelperFunctions.createWorkerChuteMatrix(solution, instance);
 
         System.out.println("\nSolution generated using heuristic in " + seconds + " seconds");
         System.out.println("Running simulation...");
-        instance.createInitialSequence();
+        System.out.println("Randomize = " + randomize);
+        Random rnd = new Random(20);
+        instance.createInitialSequence(randomize, rnd, 0.10);
         runSimulation(instance, workerChuteMatrix, destinationShiftChuteMatrix, numRuns);
     }
 
