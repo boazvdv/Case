@@ -1,99 +1,88 @@
+package Heuristics;
+
+import Objects.*;
 import SimulationPackage.InstancePostNL;
 
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Random;
+
 public class ConstructionHeuristic {
     public static Solution main(InstancePostNL instance) {
-        Chute[] chutes = initializeChutes(instance);
+        Chute[] chutes = assignChutes(instance);
+        Worker[] workers = assignWorkers(instance, chutes);
+        return new Solution(chutes, workers);
+    }
 
+    private static Chute[] assignChutes(InstancePostNL instance) {
+        Chute[] chutes = initializeChutes(instance);
         DestinationShift[] destShifts = initializeDestinationShifts(instance);
 
-        // Get matrix with blocked postal codes
-        boolean[][] blocked = instance.getBlocked();
-
-        // Separate into L / R side
+        int numDest = instance.getNumberOfDest();
         for (int leftIndicator = 0; leftIndicator <= 1; leftIndicator++) {
-            // Create array with chutes on corresponding side
-            ArrayList< Chute > chutesSide = new ArrayList <> ();
+            ArrayList<Chute> chutesSide = new ArrayList<>();
             for (Chute chute : chutes) {
                 if (chute.getIsLeft() == leftIndicator) {
                     chutesSide.add(chute);
                 }
             }
-
-            // Create queue with unassigned destination/shift combinations
-            Queue<DestinationShift> unassignedDestShifts = new LinkedList<>();
-            for (DestinationShift destShift : destShifts) {
-                if (destShift.getIsLeft() == leftIndicator) {
-                    unassignedDestShifts.add(destShift);
+            double[][] avgParcelsPerShift = new double[numDest][2];
+            for (int d = 0; d < numDest; d++) {
+                int parcels = 0;
+                int shifts = 0;
+                avgParcelsPerShift[d][0] = d;
+                for (DestinationShift destShift : destShifts) {
+                    if (destShift.getDestination() == d && destShift.getIsLeft() == leftIndicator) {
+                        parcels += destShift.getExpectedContainers();
+                        shifts++;
+                    }
                 }
+                if (shifts == 0)
+                    avgParcelsPerShift[d][1] = -1;
+                else
+                    avgParcelsPerShift[d][1] = 1.0 * parcels / shifts;
             }
 
-            // Assign destination/shift combinations to chutes
-            while (!unassignedDestShifts.isEmpty()) {
-                DestinationShift currentDestShift = unassignedDestShifts.remove();
-                int currentDest = currentDestShift.getDestination();
-                boolean assigned = false;
-                int i = 0;
+            sortByColumnDouble(avgParcelsPerShift, 1);
 
-                // Check all possible chutes as long as D/S combination is not assigned
-                while (i < chutesSide.size() & !assigned) {
-                    Chute currentChute = chutesSide.get(i);
-                    ArrayList < DestinationShift > currentAssignment = currentChute.getDestShiftAssignment();
-                    if (currentAssignment.size() < currentChute.getMaxContainers()) {
-                        boolean postalCodeBlock = false;
-                        for (DestinationShift tempDestShift : currentAssignment) {
-                            if (blocked[tempDestShift.getDestination()][currentDest]) {
-                                postalCodeBlock = true;
-                                break;
-                            }
-                        }
-                        if (!postalCodeBlock) {
-                            currentAssignment = currentChute.getDestShiftAssignment();
-                            currentAssignment.add(currentDestShift);
-                            currentChute.setDestShiftAssignment(currentAssignment);
-                            assigned = true;
-                        }
-                    }
-                    i += 1;
+            boolean[] allocated = new boolean[numDest];
+
+            for (int d = 0; d < numDest; d++)
+                if (avgParcelsPerShift[d][1] < -0.5)
+                    allocated[(int) Math.round(avgParcelsPerShift[d][0])] = true;
+
+            int curChute = 0;
+            Chute currentChute = chutesSide.get(curChute);
+
+            int curDest = (int) Math.round(avgParcelsPerShift[0][0]);
+            boolean[][] blocked = instance.getBlocked();
+            while (!areAllTrue(allocated)) {
+
+                int row = 0;
+                while (!canAddDest(curDest, currentChute, blocked) || allocated[curDest]) {
+                    row++;
+                    curDest = (int) Math.round(avgParcelsPerShift[row][0]);
                 }
+                allocated[curDest] = true;
 
-                // Randomly swap out conflicting D/S combination if no chute could be assigned due to postal code
-                if (!assigned) {
-                    ArrayList < DestinationShift > tempAssignment;
-                    Chute chuteTemp;
-                    while (true) {
-                        Random generator = new Random();
-                        int randomIndex = generator.nextInt(chutesSide.size());
-                        chuteTemp = chutesSide.get(randomIndex);
-                        tempAssignment = chuteTemp.getDestShiftAssignment();
-                        int numViolations = 0;
-                        for (DestinationShift tempDestShift : tempAssignment) {
-                            if (blocked[currentDest][tempDestShift.getDestination()]) {
-                                numViolations += 1;
-                            }
-                        }
-                        if (numViolations > 0) {
-                            break;
+                for (DestinationShift destShift : destShifts) {
+                    if (destShift.getDestination() == curDest && destShift.getIsLeft() == leftIndicator) {
+                        ArrayList<DestinationShift> destShiftAssignment = currentChute.getDestShiftAssignment();
+                        destShiftAssignment.add(destShift);
+                        chutesSide.get(curChute).setDestShiftAssignment(destShiftAssignment);
+                        if (currentChute.getDestShiftAssignment().size() >= currentChute.getMaxContainers()) {
+                            curChute++;
+                            currentChute = chutesSide.get(curChute);
                         }
                     }
-                    ArrayList <DestinationShift> newAssignment = new ArrayList<>();
-                    for (DestinationShift tempDestShift : tempAssignment) {
-                        int tempDest = tempDestShift.getDestination();
-                        if (!blocked[currentDest][tempDest]) {
-                            newAssignment.add(tempDestShift);
-                        } else {
-                            unassignedDestShifts.add(tempDestShift);
-                        }
-                    }
-                    newAssignment.add(currentDestShift);
-                    chuteTemp.setDestShiftAssignment(newAssignment);
                 }
             }
         }
+        return chutes;
+    }
+
+    private static Worker[] assignWorkers(InstancePostNL instance, Chute[] chutes) {
 
         Worker[] workers = initializeWorkers(instance);
         int maxChutesPerWorker = instance.getMaxChutesPerWorker();
@@ -157,13 +146,11 @@ public class ConstructionHeuristic {
                 }
             }
         }
-        return new Solution(chutes, workers);
+        return workers;
     }
 
     public static Chute[] initializeChutes(InstancePostNL instance) {
         // Get chutes data
-        // Initialize array of chutes
-        // Add neighboring chutes
         int[][] chutesData = instance.getChutes();
         int minDistanceFront = Integer.MAX_VALUE;
         int maxDistanceFront = Integer.MIN_VALUE;
@@ -177,6 +164,7 @@ public class ConstructionHeuristic {
             }
         }
 
+        // Initialize array of chutes
         Chute[] chutes = new Chute[chutesData.length];
         for (int i = 0; i < chutes.length; i++) {
             int[] chute = chutesData[i];
@@ -185,6 +173,7 @@ public class ConstructionHeuristic {
             chutes[i] = newChute;
         }
 
+        // Add neighboring chutes
         for (int i = 0; i < chutes.length; i++) {
             if (chutes[i].getDistanceFront() > minDistanceFront) {
                 chutes[i].addNeighboringChute(chutes[i-1]);
@@ -199,10 +188,10 @@ public class ConstructionHeuristic {
     public static DestinationShift[] initializeDestinationShifts(InstancePostNL instance) {
         // Get destination/shift data
         // Sort destination/shift combinations by expected number of containers
-        // Initialize array of destination/shift combinations
         int[][] sortedDestShiftsData = instance.getDestShift();
-        sortByColumn(sortedDestShiftsData, 3);
+        sortByColumnInt(sortedDestShiftsData, 3);
 
+        // Initialize array of destination/shift combinations
         DestinationShift[] destShifts = new DestinationShift[sortedDestShiftsData.length];
         for (int i = 0; i < sortedDestShiftsData.length; i++) {
             int[] destShift = sortedDestShiftsData[i];
@@ -217,14 +206,12 @@ public class ConstructionHeuristic {
         // Initialize settings for workers
         int numWorkers = instance.getEmployees();
         int numWorkersPerSide = numWorkers / 2;
+
         // Initialize array of workers
         Worker[] workers = new Worker[numWorkers];
         for (int i = 0; i < numWorkers; i++) {
-            int workerIsLeft = 0;
+            int workerIsLeft = (i >= numWorkersPerSide) ? 1 : 0;
             ArrayList<Worker> neighboringWorkers = new ArrayList<>();
-            if (i >= numWorkersPerSide) {
-                workerIsLeft = 1;
-            }
             workers[i] = new Worker(i, workerIsLeft, neighboringWorkers);
         }
 
@@ -238,12 +225,44 @@ public class ConstructionHeuristic {
         }
         return workers;
     }
-    public static void sortByColumn(int[][] arr, int col) {
+
+    public static boolean canAdd(DestinationShift ds, Chute chute, boolean[][] blocked) {
+        for (DestinationShift inChute : chute.getDestShiftAssignment()) {
+            if (blocked[inChute.getDestination()][ds.getDestination()])
+                return false;
+        }
+        return true;
+    }
+    public static boolean canAddDest(int destination, Chute chute, boolean[][] blocked) {
+        for (DestinationShift inChute : chute.getDestShiftAssignment()) {
+            if (blocked[inChute.getDestination()][destination])
+                return false;
+        }
+        return true;
+    }
+
+    public static void sortByColumnInt(int[][] arr, int col) {
         // Using built-in sort function Arrays.sort
         // Compare values according to columns
         Arrays.sort(arr, (entry1, entry2) -> {
             // To sort in descending order
             return Integer.compare(entry2[col], entry1[col]);
         });
+    }
+
+    public static void sortByColumnDouble(double[][] arr, int col) {
+        // Using built-in sort function Arrays.sort
+        // Compare values according to columns
+        Arrays.sort(arr, (entry1, entry2) -> {
+            // To sort in descending order
+            return Double.compare(entry2[col], entry1[col]);
+        });
+    }
+
+    static boolean areAllTrue(boolean[] array) {
+        for (boolean b : array)
+            if (!b)
+                return false;
+        return true;
     }
 }

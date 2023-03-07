@@ -1,3 +1,5 @@
+package Objects;
+
 public class DestinationShift {
 	private final int destination;
 	private final int shift;

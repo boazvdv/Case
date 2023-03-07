@@ -3,6 +3,7 @@ import SimulationPackage.InstancePostNL;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+
 public class Main {
     public static void main(String[] args) {
         boolean generateResultsHeuristic = false;
@@ -23,9 +24,13 @@ public class Main {
                     instance.setPenaltySameDestination(penaltySameDestination);
 
                     // Generate results for heuristic
-                    int numRunsHeuristic = 10;
+                    int numRunsHeuristic = 1;
+                    String heuristicType = "Simulated Annealing";
+                    //String heuristicType = "Genetic";
+                    //String heuristicType = "VND";
+                    //String heuristicType = "Construction";
                     if (generateResultsHeuristic) {
-                        GenerateResults.Heuristic(numRunsHeuristic, instance);
+                        GenerateResults.Heuristic(numRunsHeuristic, instance, heuristicType);
                     }
 
                     // Generate results for simulation

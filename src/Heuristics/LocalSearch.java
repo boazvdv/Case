@@ -1,3 +1,9 @@
+package Heuristics;
+
+import Objects.Chute;
+import Objects.DestinationShift;
+import Objects.Solution;
+import Objects.Worker;
 import SimulationPackage.InstancePostNL;
 
 import java.util.ArrayList;
@@ -35,7 +41,33 @@ public class LocalSearch {
                         }
                     }
 
-                    if (!blocked) {
+                    boolean neighbouringChutesBlock = false;
+
+                    int i = otherChute.getChuteNumber();
+                    for (int j = 0; j < 40; j++) {
+                        if(Math.abs(i-j) > 2) {
+                            for(DestinationShift desShift : chutes[j].getDestShiftAssignment()  ) {
+                                if (ds.getDestination() == desShift.getDestination()) {
+                                    neighbouringChutesBlock = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    int k = chute.getChuteNumber();
+                    for (int j = 0; j < 40; j++) {
+                        if(Math.abs(k - j) > 2) {
+                            for(DestinationShift desShift : chutes[j].getDestShiftAssignment()  ) {
+                                if (otherDs.getDestination() == desShift.getDestination()) {
+                                    neighbouringChutesBlock = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!blocked && !neighbouringChutesBlock) {
                         ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
                         ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
 
@@ -71,7 +103,21 @@ public class LocalSearch {
                         }
                     }
 
-                    if(!blocked && otherChute.getDestShiftAssignment().size() < otherChute.getMaxContainers()) {
+                    boolean neighbouringChutesBlock = false;
+
+                    int i = otherChute.getChuteNumber();
+                    for (int j = 0; j < 40; j++) {
+                        if(Math.abs(i-j) > 2) {
+                            for(DestinationShift desShift : chutes[j].getDestShiftAssignment()  ) {
+                                if (ds.getDestination() == desShift.getDestination()) {
+                                    neighbouringChutesBlock = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if(!blocked && !neighbouringChutesBlock && otherChute.getDestShiftAssignment().size() < otherChute.getMaxContainers()) {
                         ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
                         ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
 

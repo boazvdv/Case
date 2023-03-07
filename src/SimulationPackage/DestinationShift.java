@@ -20,7 +20,7 @@ public class DestinationShift {
 
 	@Override
 	public String toString() {
-		return "DestinationShift [destination=" + destination + ", shift=" + shift + "]";
+		return "Objects.DestinationShift [destination=" + destination + ", shift=" + shift + "]";
 	}
 	
 	

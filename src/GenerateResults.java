@@ -1,23 +1,39 @@
+import Heuristics.*;
 import SimulationPackage.InstancePostNL;
+import Objects.*;
 
+import java.util.Objects;
 import java.util.Random;
 
 import static SimulationPackage.Main.runSimulation;
 
 public class GenerateResults {
-    public static void Heuristic(int numRuns, InstancePostNL instance) {
+    public static void Heuristic(int numRuns, InstancePostNL instance, String heuristicType) {
         double[] obj = new double[numRuns];
         double[] objMaxWorkload = new double[numRuns];
         double[] objDistanceFront = new double[numRuns];
         double[] objSameDestination = new double[numRuns];
         double[] runningTimes = new double[numRuns];
 
-        System.out.println("Generating results using heuristic...");
+        System.out.println("\nGenerating results using " + heuristicType + " heuristic...");
         System.out.println("[ a = " + instance.getPenaltyDistanceFront() + " | B = " + instance.getPenaltySameDestination() + " ]");
         for (int i = 0; i < numRuns; i++) {
             System.out.print("\r" + "Run " + (i+1) + "/" + (numRuns));
             long begin = System.nanoTime();
-            Solution solution = SimulatedAnnealing.main(instance);
+            Solution solution;
+            if (Objects.equals(heuristicType, "Simulated Annealing")) {
+                solution = SimulatedAnnealing.main(instance);
+                HelperFunctions.printResults(solution, instance, true, true);
+            }
+            else if (Objects.equals(heuristicType, "Genetic")) {
+                solution = GeneticAlgorithm.main(instance);
+            }
+            else if (Objects.equals(heuristicType, "VND")) {
+                solution = VND.main(instance);
+            }
+            else {
+                solution = ConstructionHeuristic.main(instance);
+            }
             long end = System.nanoTime();
             long elapsedTime = end - begin;
             double seconds = (double) elapsedTime / 1_000_000_000.0;
@@ -47,7 +63,7 @@ public class GenerateResults {
 
         boolean printChutes = true;
         boolean printWorkers = true;
-//        HelperFunctions.printResults(solution, instance, printChutes, printWorkers);
+        HelperFunctions.printResults(solution, instance, printChutes, printWorkers);
 
         int[][] destinationShiftChuteMatrix = HelperFunctions.createDestinationShiftChuteMatrix(solution, instance);
         int[][] workerChuteMatrix = HelperFunctions.createWorkerChuteMatrix(solution, instance);

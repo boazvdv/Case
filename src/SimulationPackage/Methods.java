@@ -1,4 +1,4 @@
-package mipModel;
+package SimulationPackage;
 import java.util.Random;
 
 public class Methods {

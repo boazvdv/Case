@@ -1,3 +1,5 @@
+package Objects;
+
 import java.util.ArrayList;
 
 public class Chute {
@@ -23,6 +25,7 @@ public class Chute {
     public int getMaxContainers() { return maxContainers; }
     public ArrayList<DestinationShift> getDestShiftAssignment() { return destShiftAssignment; }
     public void setDestShiftAssignment(ArrayList<DestinationShift> newDestShiftAssignment) { this.destShiftAssignment = newDestShiftAssignment; }
+
     public int getExpectedContainers() {
         this.updateExpectedContainers();
         return expectedContainers;

@@ -1,7 +1,5 @@
 package SimulationPackage;
 
-import mipModel.Methods;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Random;

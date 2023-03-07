@@ -1,3 +1,7 @@
+import Objects.Chute;
+import Objects.DestinationShift;
+import Objects.Solution;
+import Objects.Worker;
 import SimulationPackage.InstancePostNL;
 
 import java.util.ArrayList;
@@ -10,7 +14,7 @@ public class HelperFunctions {
         if (printChutes) {
             for (Chute chute : chutes) {
                 System.out.print("Chute: " + chute.getChuteNumber() + "  -  D/S: [");
-                ArrayList< DestinationShift > assignment = chute.getDestShiftAssignment();
+                ArrayList<DestinationShift> assignment = chute.getDestShiftAssignment();
                 for (DestinationShift destShift : assignment) {
                     System.out.print("(" + destShift.getDestination() + ", " + destShift.getShift() + ") ");
                 }

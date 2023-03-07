@@ -1,31 +1,27 @@
+package Heuristics;
+
 import SimulationPackage.InstancePostNL;
+import Objects.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-public class SimulatedAnnealing {
+public class VND {
     public static Solution main(InstancePostNL instance) {
         // Construct initial solution
         Solution currentSolution = ConstructionHeuristic.main(instance);
         double currentObjective = currentSolution.getObjective(instance);
 
-        Solution bestSolution = currentSolution;
-        double bestObjective = currentObjective;
-
         Solution newSolution;
 
-        double delta;
-        double p;
-        double P;
-        double T = 10;
-        double stoppingCriterion = 10E-4;
-        double alpha = 0.9999;
+        double k = 0;
+        double stoppingCriterion = 10000;
 
         boolean searchChutes = true;
         Random r = new Random();
 
-        while (T > stoppingCriterion) {
+        while (k < stoppingCriterion) {
             HashMap<Integer, ArrayList<Chute>> workerNumberToChuteAssignment = saveChuteAssignment(currentSolution);
             HashMap<Integer, ArrayList<DestinationShift>> chuteNumberToDestShiftAssignment = saveDestShiftAssignment(currentSolution);
 
@@ -41,31 +37,19 @@ public class SimulatedAnnealing {
                 newSolution = LocalSearch.workerLocalSearch(instance, currentSolution, index);
                 searchChutes = true;
             }
-            double newObjective = currentSolution.getObjective(instance);
+            double newObjective = newSolution.getObjective(instance);
             if (newObjective < currentObjective) {
                 currentObjective = newObjective;
                 currentSolution = newSolution;
-
-                if (newObjective < bestObjective) {
-                    bestObjective = newObjective;
-                    bestSolution = newSolution;
-                }
+                k = 1;
             }
             else {
-                delta = newObjective - currentObjective;
-                T = alpha * T;
-                p = r.nextDouble();
-                P = Math.exp(- delta / T);
-                if (p < P) {
-                    currentObjective = newObjective;
-                    currentSolution = newSolution;
-                }
-                else {
-                    revertSolution(workerNumberToChuteAssignment, chuteNumberToDestShiftAssignment, bestSolution);
-                }
+                revertSolution(workerNumberToChuteAssignment, chuteNumberToDestShiftAssignment, currentSolution);
+                k += 1;
             }
+
         }
-        return bestSolution;
+        return currentSolution;
     }
 
     public static HashMap<Integer, ArrayList<Chute>> saveChuteAssignment(Solution currentSolution) {
