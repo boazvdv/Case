@@ -23,7 +23,6 @@ public class GenerateResults {
             Solution solution;
             if (Objects.equals(heuristicType, "Simulated Annealing")) {
                 solution = SimulatedAnnealing.main(instance);
-                HelperFunctions.printResults(solution, instance, true, true);
             }
             else if (Objects.equals(heuristicType, "Genetic")) {
                 solution = GeneticAlgorithm.main(instance);
