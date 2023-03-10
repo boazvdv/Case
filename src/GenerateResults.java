@@ -2,13 +2,14 @@ import Heuristics.*;
 import SimulationPackage.InstancePostNL;
 import Objects.*;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
 
 import static SimulationPackage.Main.runSimulation;
 
 public class GenerateResults {
-    public static void Heuristic(int numRuns, InstancePostNL instance, String heuristicType) {
+    public static void Heuristic(int numRuns, InstancePostNL instance, String heuristicType) throws IOException {
         double[] obj = new double[numRuns];
         double[] objMaxWorkload = new double[numRuns];
         double[] objDistanceFront = new double[numRuns];

@@ -4,6 +4,8 @@ import Objects.Solution;
 import Objects.Worker;
 import SimulationPackage.InstancePostNL;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class HelperFunctions {
@@ -70,5 +72,31 @@ public class HelperFunctions {
         }
 
         return workerChuteMatrix;
+    }
+
+    /**
+     * Class to write a solution of the facility production problem to a file.
+     * @param fileName: The file name of the new file
+     * @param sol: Two-dimensional array containing the solution. The first column should
+     * contain the production results and the second column the inventory results.
+     * @throws IOException
+     */
+    public static void writeToFile(String fileName, int[][] sol) throws IOException {
+
+        // Create the new file
+        FileWriter writtenSolution = new FileWriter(fileName);
+
+        writtenSolution.write(sol.length + " ");
+        writtenSolution.write(sol[0].length + " ");
+        writtenSolution.write(System.getProperty("line.separator"));
+
+        // Write the solution to the file
+        for (int j = 0; j < sol.length; j++) {
+            for (int c = 0; c < sol[0].length; c++)
+                writtenSolution.write(sol[j][c] + " ");
+            writtenSolution.write(System.getProperty("line.separator"));
+        }
+
+        writtenSolution.close();
     }
 }

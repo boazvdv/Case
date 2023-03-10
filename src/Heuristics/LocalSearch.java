@@ -41,33 +41,7 @@ public class LocalSearch {
                         }
                     }
 
-                    boolean neighbouringChutesBlock = false;
-
-                    int i = otherChute.getChuteNumber();
-                    for (int j = 0; j < 40; j++) {
-                        if(Math.abs(i-j) > 2) {
-                            for(DestinationShift desShift : chutes[j].getDestShiftAssignment()  ) {
-                                if (ds.getDestination() == desShift.getDestination()) {
-                                    neighbouringChutesBlock = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    int k = chute.getChuteNumber();
-                    for (int j = 0; j < 40; j++) {
-                        if(Math.abs(k - j) > 2) {
-                            for(DestinationShift desShift : chutes[j].getDestShiftAssignment()  ) {
-                                if (otherDs.getDestination() == desShift.getDestination()) {
-                                    neighbouringChutesBlock = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if (!blocked && !neighbouringChutesBlock) {
+                    if (!blocked) {
                         ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
                         ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
 
@@ -103,21 +77,7 @@ public class LocalSearch {
                         }
                     }
 
-                    boolean neighbouringChutesBlock = false;
-
-                    int i = otherChute.getChuteNumber();
-                    for (int j = 0; j < 40; j++) {
-                        if(Math.abs(i-j) > 2) {
-                            for(DestinationShift desShift : chutes[j].getDestShiftAssignment()  ) {
-                                if (ds.getDestination() == desShift.getDestination()) {
-                                    neighbouringChutesBlock = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if(!blocked && !neighbouringChutesBlock && otherChute.getDestShiftAssignment().size() < otherChute.getMaxContainers()) {
+                    if(!blocked && otherChute.getDestShiftAssignment().size() < otherChute.getMaxContainers()) {
                         ArrayList<DestinationShift> newAssignment = chute.getDestShiftAssignment();
                         ArrayList<DestinationShift> otherNewAssignment = otherChute.getDestShiftAssignment();
 

@@ -16,10 +16,8 @@ import java.util.Random;
 public class SimulatedAnnealing {
     public static Solution main(InstancePostNL instance) {
         // Construct initial solution
-        ArrayList<Double> objectives = new ArrayList<>();
-        Solution currentSolution = ConstructionHeuristic.main(instance);
+        Solution currentSolution = ConstructionHeuristicOld.main(instance);
         double currentObjective = currentSolution.getObjective(instance);
-        objectives.add(currentObjective);
 
         Solution bestSolution = currentSolution;
         double bestObjective = currentObjective;
@@ -75,9 +73,7 @@ public class SimulatedAnnealing {
                     revertSolution(workerNumberToChuteAssignment, chuteNumberToDestShiftAssignment, bestSolution);
                 }
             }
-            objectives.add(currentObjective);
         }
-//        writeToFile(objectives, instance.getPenaltySameDestination());
         return bestSolution;
     }
 

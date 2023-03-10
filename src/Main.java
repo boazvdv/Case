@@ -3,17 +3,19 @@ import SimulationPackage.InstancePostNL;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
-        boolean generateResultsHeuristic = false;
-        boolean generateResultsSimulation = true;
+        boolean generateResultsHeuristic = true;
+        boolean generateResultsSimulation = false;
 
         // Read file
         File fileToRead = new File("DataChanged.txt");
         try {
             double[] arrayPenaltySameDestination = { 0, 0.3, 0.6 };
             boolean[] arrayRandomize = { false, true };
+//            boolean[] arrayRandomize = { false };
 
             for (double penaltySameDestination : arrayPenaltySameDestination) {
                 for (boolean randomize : arrayRandomize) {
@@ -44,6 +46,8 @@ public class Main {
         } catch (FileNotFoundException ex) {
             System.out.println("There was an error reading file " + fileToRead);
             ex.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
